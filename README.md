@@ -1,16 +1,25 @@
-## Hi there 👋
+# qiqiqisi
 
-<!--
-**qiqiqisi/qiqiqisi** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
+Computer Science undergraduate at Ocean University of China.  
+I build small things, learn new things, and occasionally turn commits into forests.
 
-Here are some ideas to get you started:
+![Contribution Forest](./assets/contribution-forest.svg)
 
-- 🔭 I’m currently working on ...
-- 🌱 I’m currently learning ...
-- 👯 I’m looking to collaborate on ...
-- 🤔 I’m looking for help with ...
-- 💬 Ask me about ...
-- 📫 How to reach me: ...
-- 😄 Pronouns: ...
-- ⚡ Fun fact: ...
--->
+## About
+
+- Computer Science undergraduate
+- Interested in software development and deep learning
+
+## Selected Projects
+
+### [ouc-mobile-software-development](https://github.com/qiqiqisi/ouc-mobile-software-development)
+Mobile software development course projects.  
+`WeChat Mini Program` · `HarmonyOS` · `Frontend`
+
+### [django-shopping-websites](https://github.com/qiqiqisi/django-shopping-websites)
+A Django-based e-commerce web project.  
+`Django` · `Python` · `Web Development`
+
+### [Latex_Used](https://github.com/qiqiqisi/Latex_Used)
+Reusable LaTeX templates for experiment reports and academic writing.  
+`LaTeX` · `XeLaTeX` · `Academic Writing`

@@ -2,66 +2,117 @@ const fs = require("fs");
 const path = require("path");
 
 // ============================================================
-// 1. 当前先使用模拟 contribution 数据
-//    下一阶段再把这里替换成你的真实 GitHub contribution
+// 1. 读取真实 GitHub contribution 数据
 // ============================================================
+
+const token = process.env.GH_PROFILE_TOKEN;
+
+if (!token) {
+  console.error("GH_PROFILE_TOKEN is missing.");
+  process.exit(1);
+}
 
 const WEEKS = 53;
 const DAYS = 7;
 
-function seededRandom(seed) {
-  let x = seed >>> 0;
+const LEVEL_MAP = {
+  NONE: 0,
+  FIRST_QUARTILE: 1,
+  SECOND_QUARTILE: 2,
+  THIRD_QUARTILE: 3,
+  FOURTH_QUARTILE: 4,
+};
 
-  return () => {
-    x = (x * 1664525 + 1013904223) >>> 0;
-    return x / 4294967296;
+function getDateRange() {
+  const end = new Date();
+  end.setUTCHours(23, 59, 59, 999);
+
+  const start = new Date(end);
+  start.setUTCDate(start.getUTCDate() - (WEEKS * DAYS - 1));
+  start.setUTCHours(0, 0, 0, 0);
+
+  return {
+    from: start.toISOString(),
+    to: end.toISOString(),
   };
 }
 
-const random = seededRandom(20260926);
+async function fetchContributionData() {
+  const { from, to } = getDateRange();
 
-function createMockContributions() {
-  const result = [];
-
-  for (let week = 0; week < WEEKS; week++) {
-    result[week] = [];
-
-    // 故意制造几段“活跃期”，让预览森林有高低起伏
-    const seasonal =
-      0.34 +
-      0.22 * Math.sin((week / 52) * Math.PI * 3 - 0.7);
-
-    const cluster =
-      (week > 13 && week < 20 ? 0.24 : 0) +
-      (week > 34 && week < 42 ? 0.3 : 0) +
-      (week > 45 && week < 50 ? 0.16 : 0);
-
-    for (let day = 0; day < DAYS; day++) {
-      const weekendPenalty =
-        day === 0 || day === 6 ? -0.1 : 0.03;
-
-      const score =
-        random() +
-        seasonal +
-        cluster +
-        weekendPenalty;
-
-      let level = 0;
-
-      if (score > 1.24) level = 4;
-      else if (score > 1.03) level = 3;
-      else if (score > 0.83) level = 2;
-      else if (score > 0.68) level = 1;
-
-      result[week][day] = level;
+  const query = `
+    query($from: DateTime!, $to: DateTime!) {
+      viewer {
+        login
+        contributionsCollection(from: $from, to: $to) {
+          contributionCalendar {
+            totalContributions
+            weeks {
+              contributionDays {
+                date
+                contributionCount
+                contributionLevel
+                weekday
+              }
+            }
+          }
+        }
+      }
     }
+  `;
+
+  const response = await fetch("https://api.github.com/graphql", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+      "User-Agent": "qiqiqisi-contribution-forest",
+    },
+    body: JSON.stringify({
+      query,
+      variables: { from, to },
+    }),
+  });
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    console.error("GitHub API request failed:");
+    console.error(result);
+    process.exit(1);
   }
 
-  return result;
+  if (result.errors) {
+    console.error("GraphQL errors:");
+    console.error(result.errors);
+    process.exit(1);
+  }
+
+  const viewer = result.data.viewer;
+  const calendar =
+    viewer.contributionsCollection.contributionCalendar;
+
+  const weeks = calendar.weeks.slice(-WEEKS);
+
+  const contributions = Array.from(
+    { length: WEEKS },
+    () => Array(DAYS).fill(0)
+  );
+
+  weeks.forEach((week, weekIndex) => {
+    week.contributionDays.forEach((day, dayIndex) => {
+      contributions[weekIndex][dayIndex] =
+        LEVEL_MAP[day.contributionLevel] ?? 0;
+    });
+  });
+
+  return {
+    login: viewer.login,
+    totalContributions: calendar.totalContributions,
+    weeks,
+    contributions,
+  };
 }
-
-const contributions = createMockContributions();
-
 
 // ============================================================
 // 2. SVG 基础参数
@@ -70,7 +121,6 @@ const contributions = createMockContributions();
 const WIDTH = 1100;
 const HEIGHT = 540;
 
-// 等距投影视角
 const ORIGIN_X = 180;
 const ORIGIN_Y = 95;
 
@@ -79,7 +129,6 @@ const STEP_Y = 6.2;
 
 const TILE_W = 11.2;
 const TILE_H = 5.6;
-
 
 // ============================================================
 // 3. SVG 工具函数
@@ -119,9 +168,8 @@ function rect(x, y, width, height, fill) {
   `;
 }
 
-
 // ============================================================
-// 4. 绘制等距立体树冠
+// 4. 立体树冠
 // ============================================================
 
 function prism(
@@ -161,12 +209,11 @@ function prism(
   `;
 }
 
-
 // ============================================================
-// 5. 不同 contribution 等级对应不同树
+// 5. 绘制树
 //
 // level 0：空地
-// level 1：小芽
+// level 1：小草
 // level 2：小树
 // level 3：普通树
 // level 4：高树
@@ -175,6 +222,48 @@ function prism(
 function drawTree(x, y, level) {
   if (level === 0) {
     return "";
+  }
+
+  if (level === 1) {
+    return `
+      <g>
+        ${polygon(
+          [
+            [x - 5.2, y + 1.8],
+            [x - 2.5, y - 11],
+            [x - 0.7, y + 1.8],
+          ],
+          "#dcefdc"
+        )}
+
+        ${polygon(
+          [
+            [x - 1.6, y + 1.8],
+            [x + 0.1, y - 15],
+            [x + 1.7, y + 1.8],
+          ],
+          "#a6dbab"
+        )}
+
+        ${polygon(
+          [
+            [x + 0.4, y + 1.8],
+            [x + 4.6, y - 12],
+            [x + 3.0, y + 1.8],
+          ],
+          "#bde3bf"
+        )}
+
+        ${polygon(
+          [
+            [x - 0.2, y + 1.8],
+            [x + 2.0, y - 9],
+            [x + 1.1, y + 1.8],
+          ],
+          "#82cd8f"
+        )}
+      </g>
+    `;
   }
 
   const shadow = `
@@ -188,47 +277,6 @@ function drawTree(x, y, level) {
     />
   `;
 
-  if (level === 1) {
-  return `
-    <g>
-      ${polygon(
-        [
-          [x - 5.2, y + 1.8],
-          [x - 2.5, y - 11],
-          [x - 0.7, y + 1.8],
-        ],
-        "#dcefdc"
-      )}
-
-      ${polygon(
-        [
-          [x - 1.6, y + 1.8],
-          [x + 0.1, y - 15],
-          [x + 1.7, y + 1.8],
-        ],
-        "#a6dbab"
-      )}
-
-      ${polygon(
-        [
-          [x + 0.4, y + 1.8],
-          [x + 4.6, y - 12],
-          [x + 3.0, y + 1.8],
-        ],
-        "#bde3bf"
-      )}
-
-      ${polygon(
-        [
-          [x - 0.2, y + 1.8],
-          [x + 2.0, y - 9],
-          [x + 1.1, y + 1.8],
-        ],
-        "#82cd8f"
-      )}
-    </g>
-  `;
-}
   if (level === 2) {
     return `
       <g>
@@ -336,9 +384,8 @@ function drawTree(x, y, level) {
   `;
 }
 
-
 // ============================================================
-// 6. 绘制地面
+// 6. 地面
 // ============================================================
 
 function drawGround() {
@@ -367,15 +414,11 @@ function drawGround() {
   return svg;
 }
 
-
 // ============================================================
-// 7. 绘制森林
-//
-// 注意按“从后向前”的顺序绘制，
-// 否则 SVG 会出现前后遮挡错误。
+// 7. 森林
 // ============================================================
 
-function drawForest() {
+function drawForest(contributions) {
   let svg = "";
 
   for (
@@ -407,16 +450,12 @@ function drawForest() {
   return svg;
 }
 
-
 // ============================================================
-// 8. 月份标签
+// 8. 月份标签（动态）
 // ============================================================
 
-function drawMonths() {
+function drawMonths(weeks) {
   const monthNames = [
-    "oct",
-    "nov",
-    "dec",
     "jan",
     "feb",
     "mar",
@@ -426,30 +465,48 @@ function drawMonths() {
     "jul",
     "aug",
     "sep",
+    "oct",
+    "nov",
+    "dec",
   ];
 
-  const monthWeeks = [
-    0,
-    4,
-    9,
-    13,
-    18,
-    22,
-    26,
-    31,
-    35,
-    40,
-    44,
-    48,
-  ];
+  const labels = [];
+  const seen = new Set();
+
+  // 先加入第一列的月份
+  if (weeks.length > 0 && weeks[0].contributionDays.length > 0) {
+    const firstDate = new Date(
+      `${weeks[0].contributionDays[0].date}T00:00:00Z`
+    );
+    const key = `${firstDate.getUTCFullYear()}-${firstDate.getUTCMonth()}`;
+    seen.add(key);
+    labels.push({
+      week: 0,
+      label: monthNames[firstDate.getUTCMonth()],
+    });
+  }
+
+  // 之后每当某个月第一次出现 1 号时，添加标签
+  weeks.forEach((week, weekIndex) => {
+    for (const day of week.contributionDays) {
+      const date = new Date(`${day.date}T00:00:00Z`);
+      const key = `${date.getUTCFullYear()}-${date.getUTCMonth()}`;
+
+      if (date.getUTCDate() === 1 && !seen.has(key)) {
+        seen.add(key);
+        labels.push({
+          week: weekIndex,
+          label: monthNames[date.getUTCMonth()],
+        });
+        break;
+      }
+    }
+  });
 
   let svg = "";
 
-  monthNames.forEach((month, index) => {
-    const [x, y] = iso(
-      monthWeeks[index],
-      6
-    );
+  labels.forEach(({ week, label }) => {
+    const [x, y] = iso(week, 6);
 
     svg += `
       <text
@@ -460,7 +517,7 @@ function drawMonths() {
         font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
         text-anchor="middle"
       >
-        ${month}
+        ${label}
       </text>
     `;
   });
@@ -468,19 +525,24 @@ function drawMonths() {
   return svg;
 }
 
-
 // ============================================================
-// 9. 最终 SVG
+// 9. 生成 SVG
 // ============================================================
 
-const svg = `
+function buildSvg({
+  login,
+  totalContributions,
+  weeks,
+  contributions,
+}) {
+  return `
 <svg
   xmlns="http://www.w3.org/2000/svg"
   viewBox="0 0 ${WIDTH} ${HEIGHT}"
   width="${WIDTH}"
   height="${HEIGHT}"
   role="img"
-  aria-label="qiqiqisi GitHub contribution forest"
+  aria-label="${login} GitHub contribution forest"
 >
 
   <rect
@@ -512,9 +574,19 @@ const svg = `
 
   ${drawGround()}
 
-  ${drawForest()}
+  ${drawForest(contributions)}
 
-  ${drawMonths()}
+  ${drawMonths(weeks)}
+
+  <text
+    x="34"
+    y="496"
+    fill="#656d76"
+    font-size="10"
+    font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
+  >
+    total contributions in this view: ${totalContributions}
+  </text>
 
   <text
     x="34"
@@ -523,39 +595,49 @@ const svg = `
     font-size="10"
     font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
   >
-    one year, 365 small chances to grow
+    one year, 371 small chances to grow
   </text>
 
 </svg>
-`;
-
+`.trim();
+}
 
 // ============================================================
-// 10. 写入 assets/contribution-forest.svg
+// 10. 写入 SVG
 // ============================================================
 
-const outputDir = path.join(
-  __dirname,
-  "..",
-  "assets"
-);
+async function main() {
+  const data = await fetchContributionData();
 
-fs.mkdirSync(outputDir, {
-  recursive: true,
+  const svg = buildSvg(data);
+
+  const outputDir = path.join(
+    __dirname,
+    "..",
+    "assets"
+  );
+
+  fs.mkdirSync(outputDir, {
+    recursive: true,
+  });
+
+  const outputPath = path.join(
+    outputDir,
+    "contribution-forest.svg"
+  );
+
+  fs.writeFileSync(outputPath, svg, "utf8");
+
+  console.log(
+    `✓ Contribution forest generated for ${data.login}`
+  );
+  console.log(
+    `✓ Total contributions: ${data.totalContributions}`
+  );
+  console.log(`✓ Output: ${outputPath}`);
+}
+
+main().catch((error) => {
+  console.error(error);
+  process.exit(1);
 });
-
-const outputPath = path.join(
-  outputDir,
-  "contribution-forest.svg"
-);
-
-fs.writeFileSync(
-  outputPath,
-  svg.trim(),
-  "utf8"
-);
-
-console.log(
-  `✓ Contribution forest generated:
-${outputPath}`
-);

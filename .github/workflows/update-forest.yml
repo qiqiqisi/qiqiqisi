@@ -1,21 +1,41 @@
-name: Test Contribution API
+name: Update Contribution Forest
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: "15 1 * * *"
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  test:
+  update:
     runs-on: ubuntu-latest
-
-    env:
-      GH_PROFILE_TOKEN: ${{ secrets.GH_PROFILE_TOKEN }}
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@v4
 
-      - name: Test GitHub contribution API
-        run: node scripts/test-contributions.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Generate contribution forest
+        env:
+          GH_PROFILE_TOKEN: ${{ secrets.GH_PROFILE_TOKEN }}
+        run: node scripts/generate-forest.js
+
+      - name: Commit and push if changed
+        run: |
+          if git diff --quiet -- assets/contribution-forest.svg; then
+            echo "No changes to commit."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add assets/contribution-forest.svg
+          git commit -m "chore: update contribution forest"
+          git push
