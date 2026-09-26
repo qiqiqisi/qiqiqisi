@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1040 154" width="1040" height="154" role="img" aria-label="Hi, I'm qiqiqisi. Computer Science undergraduate at Ocean University of China.">
+  <style>
+    .title {
+      font: 700 42px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      fill: #1f2328;
+      letter-spacing: -1.4px;
+    }
+    .line {
+      font: 16px -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      fill: #656d76;
+      opacity: 0;
+      animation: fade .45s ease forwards;
+    }
+    .line.one { animation-delay: 1.55s; }
+    .line.two { animation-delay: 1.82s; }
+    .cursor {
+      fill: #1f2328;
+      animation: blink .9s steps(1,end) 1.5s infinite;
+    }
+    @keyframes fade { to { opacity: 1; } }
+    @keyframes blink { 50% { opacity: 0; } }
+    @media (prefers-reduced-motion: reduce) {
+      .line { opacity: 1; animation: none; }
+      .cursor { animation: none; }
+    }
+  </style>
+
+  <defs>
+    <clipPath id="typingClip">
+      <rect x="0" y="0" width="0" height="72">
+        <animate attributeName="width" from="0" to="450" dur="1.45s" fill="freeze" calcMode="discrete" values="0;26;52;78;104;130;156;182;208;234;260;286;312;338;364;390;416;450" keyTimes="0;.06;.12;.18;.24;.30;.36;.42;.48;.54;.60;.66;.72;.78;.84;.90;.96;1"/>
+      </rect>
+    </clipPath>
+  </defs>
+
+  <g clip-path="url(#typingClip)">
+    <text class="title" x="0" y="48">Hi, I'm qiqiqisi.</text>
+  </g>
+
+  <rect class="cursor" x="424" y="15" width="4" height="40">
+    <animate attributeName="x" from="0" to="424" dur="1.45s" fill="freeze"/>
+  </rect>
+
+  <text class="line one" x="0" y="94">Computer Science undergraduate at Ocean University of China.</text>
+  <text class="line two" x="0" y="124">I build small things, learn new things, and occasionally turn commits into forests.</text>
+</svg>
