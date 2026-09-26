@@ -119,10 +119,10 @@ async function fetchContributionData() {
 // ============================================================
 
 const WIDTH = 900;
-const HEIGHT = 520;
+const HEIGHT = 575;
 
 const ORIGIN_X = 145;
-const ORIGIN_Y = 125;
+const ORIGIN_Y = 105;
 
 const STEP_X = 12.3;
 const STEP_Y = 6.2;
