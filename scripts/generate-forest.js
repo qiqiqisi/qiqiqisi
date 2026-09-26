@@ -118,11 +118,11 @@ async function fetchContributionData() {
 // 2. SVG 基础参数
 // ============================================================
 
-const WIDTH = 900;
-const HEIGHT = 575;
+const WIDTH = 930;
+const HEIGHT = 490;
 
-const ORIGIN_X = 145;
-const ORIGIN_Y = 105;
+const ORIGIN_X = 120;
+const ORIGIN_Y = 82;
 
 const STEP_X = 12.3;
 const STEP_Y = 6.2;
@@ -446,9 +446,8 @@ function drawForest(contributions) {
       const [x, y] = iso(week, day);
 
       const delay = (
-        0.55 +
-        week * 0.026 +
-        day * 0.012
+        week * 0.035 +
+        day * 0.015
       ).toFixed(2);
 
       const cls =
@@ -473,47 +472,70 @@ function drawForest(contributions) {
 
 function drawMonths(weeks) {
   const monthNames = [
-    "jan", "feb", "mar", "apr", "may", "jun",
-    "jul", "aug", "sep", "oct", "nov", "dec",
+    "jan",
+    "feb",
+    "mar",
+    "apr",
+    "may",
+    "jun",
+    "jul",
+    "aug",
+    "sep",
+    "oct",
+    "nov",
+    "dec",
   ];
 
   const labels = [];
   const seen = new Set();
 
+  if (weeks.length > 0 && weeks[0].contributionDays.length > 0) {
+    const firstDate = new Date(
+      `${weeks[0].contributionDays[0].date}T00:00:00Z`
+    );
+    const key = `${firstDate.getUTCFullYear()}-${firstDate.getUTCMonth()}`;
+    seen.add(key);
+    labels.push({
+      week: 0,
+      label: monthNames[firstDate.getUTCMonth()],
+    });
+  }
+
   weeks.forEach((week, weekIndex) => {
     for (const day of week.contributionDays) {
       const date = new Date(`${day.date}T00:00:00Z`);
-
-      if (date.getUTCDate() !== 1) {
-        continue;
-      }
-
       const key = `${date.getUTCFullYear()}-${date.getUTCMonth()}`;
 
-      if (seen.has(key)) {
-        continue;
+      if (date.getUTCDate() === 1 && !seen.has(key)) {
+        seen.add(key);
+        labels.push({
+          week: weekIndex,
+          label: monthNames[date.getUTCMonth()],
+        });
+        break;
       }
-
-      seen.add(key);
-      labels.push({
-        week: weekIndex,
-        label: monthNames[date.getUTCMonth()],
-      });
-      break;
     }
   });
 
-  return labels.map(({ week, label }, index) => {
-    const [x, y] = iso(week, 6);
-    const delay = (1.0 + index * 0.055).toFixed(2);
+  let svg = "";
+  let lastX = -Infinity;
 
-    return `
+  labels.forEach(({ week, label }, index) => {
+    const [x, y] = iso(week, 6);
+
+    // 如果太近，就跳过，避免 sep / oct 这种撞在一起
+    if (x - lastX < 38) {
+      return;
+    }
+
+    lastX = x;
+
+    svg += `
       <text
         class="month-label"
-        style="animation-delay: ${delay}s"
         x="${x + 2}"
         y="${y + 20}"
-        fill="#656d76"
+        fill="#5f6772"
         font-size="10.5"
         font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
         text-anchor="middle"
@@ -521,7 +543,9 @@ function drawMonths(weeks) {
         ${label}
       </text>
     `;
-  }).join("");
+  });
+
+  return svg;
 }
 
 // ============================================================
@@ -543,84 +567,73 @@ function buildSvg({
   role="img"
   aria-label="${login} GitHub contribution forest"
 >
-  <defs>
-    <radialGradient id="softGlow" cx="67%" cy="24%" r="44%">
-      <stop offset="0%" stop-color="#75c883" stop-opacity="0.10"/>
-      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
-    </radialGradient>
-  </defs>
-
   <style>
-    .card {
+    .title {
       opacity: 0;
-      animation: cardIn .45s ease forwards;
+      animation: fadeUp 0.65s ease forwards;
     }
 
-    .header-title,
-    .header-caption,
-    .legend,
-    .sync-note {
+    .subtitle {
       opacity: 0;
-      transform: translateY(4px);
-      animation: fadeUp .48s ease forwards;
+      animation: fadeUp 0.65s ease 0.22s forwards;
     }
 
-    .header-title { animation-delay: .12s; }
-    .header-caption { animation-delay: .22s; }
-    .legend { animation-delay: .28s; }
-    .sync-note { animation-delay: .36s; }
-
-    .ground {
+    .meta-line {
       opacity: 0;
-      animation: groundIn .55s ease .28s forwards;
+      animation: fadeUp 0.65s ease 0.55s forwards;
     }
 
     .month-label {
       opacity: 0;
-      animation: fadeIn .35s ease forwards;
+      animation: fadeIn 0.35s ease 1.8s forwards;
     }
 
-    .tree-grow,
+    .tree-grow {
+      opacity: 0;
+      transform-box: fill-box;
+      transform-origin: center bottom;
+      animation: treeGrow 0.58s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    }
+
     .grass-grow {
       opacity: 0;
       transform-box: fill-box;
       transform-origin: center bottom;
+      animation: grassGrow 0.42s ease-out forwards;
     }
 
-    .tree-grow {
-      animation: treeGrow .54s cubic-bezier(.18,.78,.22,1) forwards;
-    }
-
-    .grass-grow {
-      animation: grassGrow .40s ease-out forwards;
-    }
-
-    @keyframes cardIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-
-    @keyframes groundIn {
-      from { opacity: 0; transform: translateY(4px); }
-      to { opacity: 1; transform: translateY(0); }
+    .blink {
+      animation: blink 1s steps(1, end) infinite;
     }
 
     @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(5px); }
-      to { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(6px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
     }
 
     @keyframes treeGrow {
       0% {
         opacity: 0;
-        transform: translateY(9px) scaleY(.18) scaleX(.92);
+        transform: translateY(10px) scaleY(0.18) scaleX(0.9);
       }
-      55% { opacity: 1; }
+      60% {
+        opacity: 1;
+      }
       100% {
         opacity: 1;
         transform: translateY(0) scaleY(1) scaleX(1);
@@ -628,97 +641,80 @@ function buildSvg({
     }
 
     @keyframes grassGrow {
-      from {
+      0% {
         opacity: 0;
-        transform: translateY(5px) scaleY(.18);
+        transform: translateY(6px) scaleY(0.2);
       }
-      to {
+      100% {
         opacity: 1;
         transform: translateY(0) scaleY(1);
       }
     }
 
-    @media (prefers-reduced-motion: reduce) {
-      * {
-        animation-duration: .001ms !important;
-        animation-delay: 0ms !important;
+    @keyframes blink {
+      50% {
+        opacity: 0;
       }
     }
   </style>
 
   <rect
-    class="card"
-    x="1"
-    y="1"
-    width="${WIDTH - 2}"
-    height="${HEIGHT - 2}"
-    rx="16"
+    width="100%"
+    height="100%"
     fill="#ffffff"
-    stroke="#d0d7de"
-  />
-
-  <rect
-    class="card"
-    x="1"
-    y="1"
-    width="${WIDTH - 2}"
-    height="${HEIGHT - 2}"
-    rx="16"
-    fill="url(#softGlow)"
   />
 
   <text
-    class="header-title"
-    x="24"
-    y="30"
+    class="title"
+    x="34"
+    y="38"
     fill="#1f2328"
-    font-size="15"
-    font-weight="600"
+    font-size="16"
+    font-weight="700"
     font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
   >
-    contribution forest
+    contribution forest<tspan class="blink">_</tspan>
   </text>
 
   <text
-    class="header-caption"
-    x="24"
-    y="50"
+    class="subtitle"
+    x="34"
+    y="58"
     fill="#656d76"
     font-size="11"
-    font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif"
+    font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
   >
     one year of activity, grown instead of counted.
   </text>
 
-  <g class="legend" transform="translate(700 24)">
-    <text x="0" y="9" fill="#656d76" font-size="10"
-      font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">less</text>
-    <rect x="29" y="1" width="9" height="9" rx="2" fill="#eef3ef"/>
-    <rect x="43" y="1" width="9" height="9" rx="2" fill="#b7dfbd"/>
-    <rect x="57" y="1" width="9" height="9" rx="2" fill="#75c883"/>
-    <rect x="71" y="1" width="9" height="9" rx="2" fill="#3da55a"/>
-    <rect x="85" y="1" width="9" height="9" rx="2" fill="#176b39"/>
-    <text x="101" y="9" fill="#656d76" font-size="10"
-      font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">more</text>
-  </g>
-
-  <text
-    class="sync-note"
-    x="676"
-    y="50"
-    fill="#8c959f"
-    font-size="9.5"
-    font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
-  >
-    ${totalContributions} contributions · synced daily
-  </text>
-
-  <g class="ground">
-    ${drawGround()}
-  </g>
+  ${drawGround()}
 
   ${drawForest(contributions)}
+
   ${drawMonths(weeks)}
+
+  <text
+    class="meta-line"
+    x="34"
+    y="385"
+    fill="#55606d"
+    font-size="10.5"
+    font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
+  >
+    total contributions in this view: ${totalContributions}
+  </text>
+
+  <text
+    class="meta-line"
+    x="34"
+    y="402"
+    fill="#8c959f"
+    font-size="10"
+    font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
+  >
+    one year, 371 small chances to grow
+  </text>
+
 </svg>
 `.trim();
 }
