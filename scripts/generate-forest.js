@@ -118,11 +118,11 @@ async function fetchContributionData() {
 // 2. SVG 基础参数
 // ============================================================
 
-const WIDTH = 1100;
-const HEIGHT = 540;
+const WIDTH = 930;
+const HEIGHT = 430;
 
-const ORIGIN_X = 180;
-const ORIGIN_Y = 95;
+const ORIGIN_X = 120;
+const ORIGIN_Y = 82;
 
 const STEP_X = 12.3;
 const STEP_Y = 6.2;
@@ -437,19 +437,35 @@ function drawForest(contributions) {
         continue;
       }
 
+      const level = contributions[week][day];
+
+      if (level === 0) {
+        continue;
+      }
+
       const [x, y] = iso(week, day);
 
-      svg += drawTree(
-        x,
-        y,
-        contributions[week][day]
-      );
+      const delay = (
+        week * 0.035 +
+        day * 0.015
+      ).toFixed(2);
+
+      const cls =
+        level === 1 ? "grass-grow" : "tree-grow";
+
+      svg += `
+        <g
+          class="${cls}"
+          style="animation-delay: ${delay}s;"
+        >
+          ${drawTree(x, y, level)}
+        </g>
+      `;
     }
   }
 
   return svg;
 }
-
 // ============================================================
 // 8. 月份标签（动态）
 // ============================================================
@@ -473,7 +489,6 @@ function drawMonths(weeks) {
   const labels = [];
   const seen = new Set();
 
-  // 先加入第一列的月份
   if (weeks.length > 0 && weeks[0].contributionDays.length > 0) {
     const firstDate = new Date(
       `${weeks[0].contributionDays[0].date}T00:00:00Z`
@@ -486,7 +501,6 @@ function drawMonths(weeks) {
     });
   }
 
-  // 之后每当某个月第一次出现 1 号时，添加标签
   weeks.forEach((week, weekIndex) => {
     for (const day of week.contributionDays) {
       const date = new Date(`${day.date}T00:00:00Z`);
@@ -504,15 +518,24 @@ function drawMonths(weeks) {
   });
 
   let svg = "";
+  let lastX = -Infinity;
 
-  labels.forEach(({ week, label }) => {
+  labels.forEach(({ week, label }, index) => {
     const [x, y] = iso(week, 6);
+
+    // 如果太近，就跳过，避免 sep / oct 这种撞在一起
+    if (x - lastX < 38) {
+      return;
+    }
+
+    lastX = x;
 
     svg += `
       <text
+        class="month-label"
         x="${x + 2}"
-        y="${y + 24}"
-        fill="#656d76"
+        y="${y + 20}"
+        fill="#5f6772"
         font-size="10.5"
         font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
         text-anchor="middle"
@@ -544,6 +567,96 @@ function buildSvg({
   role="img"
   aria-label="${login} GitHub contribution forest"
 >
+  <style>
+    .title {
+      opacity: 0;
+      animation: fadeUp 0.65s ease forwards;
+    }
+
+    .subtitle {
+      opacity: 0;
+      animation: fadeUp 0.65s ease 0.22s forwards;
+    }
+
+    .meta-line {
+      opacity: 0;
+      animation: fadeUp 0.65s ease 0.55s forwards;
+    }
+
+    .month-label {
+      opacity: 0;
+      animation: fadeIn 0.35s ease 1.8s forwards;
+    }
+
+    .tree-grow {
+      opacity: 0;
+      transform-box: fill-box;
+      transform-origin: center bottom;
+      animation: treeGrow 0.58s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    }
+
+    .grass-grow {
+      opacity: 0;
+      transform-box: fill-box;
+      transform-origin: center bottom;
+      animation: grassGrow 0.42s ease-out forwards;
+    }
+
+    .blink {
+      animation: blink 1s steps(1, end) infinite;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(6px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+
+    @keyframes treeGrow {
+      0% {
+        opacity: 0;
+        transform: translateY(10px) scaleY(0.18) scaleX(0.9);
+      }
+      60% {
+        opacity: 1;
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0) scaleY(1) scaleX(1);
+      }
+    }
+
+    @keyframes grassGrow {
+      0% {
+        opacity: 0;
+        transform: translateY(6px) scaleY(0.2);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0) scaleY(1);
+      }
+    }
+
+    @keyframes blink {
+      50% {
+        opacity: 0;
+      }
+    }
+  </style>
 
   <rect
     width="100%"
@@ -552,17 +665,19 @@ function buildSvg({
   />
 
   <text
+    class="title"
     x="34"
     y="38"
     fill="#1f2328"
     font-size="16"
-    font-weight="600"
+    font-weight="700"
     font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
   >
-    contribution forest
+    contribution forest<tspan class="blink">_</tspan>
   </text>
 
   <text
+    class="subtitle"
     x="34"
     y="58"
     fill="#656d76"
@@ -579,18 +694,20 @@ function buildSvg({
   ${drawMonths(weeks)}
 
   <text
+    class="meta-line"
     x="34"
-    y="496"
-    fill="#656d76"
-    font-size="10"
+    y="385"
+    fill="#55606d"
+    font-size="10.5"
     font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
   >
     total contributions in this view: ${totalContributions}
   </text>
 
   <text
+    class="meta-line"
     x="34"
-    y="510"
+    y="402"
     fill="#8c959f"
     font-size="10"
     font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
