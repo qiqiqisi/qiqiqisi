@@ -1,0 +1,21 @@
+name: Test Contribution API
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    env:
+      GH_PROFILE_TOKEN: ${{ secrets.GH_PROFILE_TOKEN }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Test GitHub contribution API
+        run: node scripts/test-contributions.js
