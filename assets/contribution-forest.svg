@@ -3051,90 +3051,114 @@
         </g>
       
         <g
-          class="grass-grow"
+          class="tree-grow"
           style="animation-delay: 1.33s;"
         >
           
       <g>
         
-    <polygon
-      points="582.2,319.40000000000003 584.9000000000001,306.6 586.7,319.40000000000003"
-      fill="#dcefdc"
-      stroke="none"
-      stroke-width="0"
+    <ellipse
+      cx="587.4000000000001"
+      cy="318.6"
+      rx="7.4"
+      ry="3"
+      fill="#1f2328"
+      opacity="0.07"
     />
   
 
         
-    <polygon
-      points="585.8000000000001,319.40000000000003 587.5000000000001,302.6 589.1000000000001,319.40000000000003"
-      fill="#a6dbab"
-      stroke="none"
-      stroke-width="0"
+    <rect
+      x="585.8000000000001"
+      y="299.6"
+      width="3.2"
+      height="18"
+      fill="#806246"
     />
   
 
         
+    
     <polygon
-      points="587.8000000000001,319.40000000000003 592.0000000000001,305.6 590.4000000000001,319.40000000000003"
-      fill="#bde3bf"
+      points="580.4000000000001,292.3 587.4000000000001,295 587.4000000000001,303 580.4000000000001,300.3"
+      fill="#55ad69"
       stroke="none"
       stroke-width="0"
     />
   
-
-        
+    
     <polygon
-      points="587.2,319.40000000000003 589.4000000000001,308.6 588.5000000000001,319.40000000000003"
-      fill="#82cd8f"
+      points="594.4000000000001,292.3 587.4000000000001,295 587.4000000000001,303 594.4000000000001,300.3"
+      fill="#55ad69"
       stroke="none"
       stroke-width="0"
     />
+  
+    
+    <polygon
+      points="587.4000000000001,289.6 594.4000000000001,292.3 587.4000000000001,295 580.4000000000001,292.3"
+      fill="#75c883"
+      stroke="none"
+      stroke-width="0"
+    />
+  
   
       </g>
     
         </g>
       
         <g
-          class="grass-grow"
+          class="tree-grow"
           style="animation-delay: 1.39s;"
         >
           
       <g>
         
-    <polygon
-      points="496.1,350.40000000000003 498.8,337.6 500.6,350.40000000000003"
-      fill="#dcefdc"
-      stroke="none"
-      stroke-width="0"
+    <ellipse
+      cx="501.3"
+      cy="349.6"
+      rx="7.4"
+      ry="3"
+      fill="#1f2328"
+      opacity="0.07"
     />
   
 
         
-    <polygon
-      points="499.7,350.40000000000003 501.40000000000003,333.6 503,350.40000000000003"
-      fill="#a6dbab"
-      stroke="none"
-      stroke-width="0"
+    <rect
+      x="499.7"
+      y="330.6"
+      width="3.2"
+      height="18"
+      fill="#806246"
     />
   
 
         
+    
     <polygon
-      points="501.7,350.40000000000003 505.90000000000003,336.6 504.3,350.40000000000003"
-      fill="#bde3bf"
+      points="494.3,323.3 501.3,326 501.3,334 494.3,331.3"
+      fill="#55ad69"
       stroke="none"
       stroke-width="0"
     />
   
-
-        
+    
     <polygon
-      points="501.1,350.40000000000003 503.3,339.6 502.40000000000003,350.40000000000003"
-      fill="#82cd8f"
+      points="508.3,323.3 501.3,326 501.3,334 508.3,331.3"
+      fill="#55ad69"
       stroke="none"
       stroke-width="0"
     />
+  
+    
+    <polygon
+      points="501.3,320.6 508.3,323.3 501.3,326 494.3,323.3"
+      fill="#75c883"
+      stroke="none"
+      stroke-width="0"
+    />
+  
   
       </g>
     
@@ -3799,6 +3823,63 @@
       
         <g
           class="tree-grow"
+          style="animation-delay: 1.82s;"
+        >
+          
+      <g>
+        
+    <ellipse
+      cx="759.6"
+      cy="405.40000000000003"
+      rx="7.4"
+      ry="3"
+      fill="#1f2328"
+      opacity="0.07"
+    />
+  
+
+        
+    <rect
+      x="758"
+      y="386.40000000000003"
+      width="3.2"
+      height="18"
+      fill="#806246"
+    />
+  
+
+        
+    
+    <polygon
+      points="752.6,379.1 759.6,381.8 759.6,389.8 752.6,387.1"
+      fill="#55ad69"
+      stroke="none"
+      stroke-width="0"
+    />
+  
+    
+    <polygon
+      points="766.6,379.1 759.6,381.8 759.6,389.8 766.6,387.1"
+      fill="#55ad69"
+      stroke="none"
+      stroke-width="0"
+    />
+  
+    
+    <polygon
+      points="759.6,376.40000000000003 766.6,379.1 759.6,381.8 752.6,379.1"
+      fill="#75c883"
+      stroke="none"
+      stroke-width="0"
+    />
+  
+  
+      </g>
+    
+        </g>
+      
+        <g
+          class="tree-grow"
           style="animation-delay: 1.74s;"
         >
           
@@ -4396,7 +4477,7 @@
     font-size="10.5"
     font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
   >
-    total contributions in this view: 107
+    total contributions in this view: 119
   </text>
 
   <text
