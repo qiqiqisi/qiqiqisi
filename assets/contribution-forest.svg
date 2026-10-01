@@ -4468,6 +4468,18 @@
         sep
       </text>
     
+      <text
+        class="month-label"
+        x="687.8000000000001"
+        y="461.6"
+        fill="#5f6772"
+        font-size="10.5"
+        font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
+        text-anchor="middle"
+      >
+        oct
+      </text>
+    
 
   <text
     class="meta-line"
