@@ -4122,6 +4122,63 @@
         </g>
       
         <g
+          class="tree-grow"
+          style="animation-delay: 1.85s;"
+        >
+          
+      <g>
+        
+    <ellipse
+      cx="735"
+      cy="417.8"
+      rx="7.4"
+      ry="3"
+      fill="#1f2328"
+      opacity="0.07"
+    />
+  
+
+        
+    <rect
+      x="733.4"
+      y="398.8"
+      width="3.2"
+      height="18"
+      fill="#806246"
+    />
+  
+
+        
+    
+    <polygon
+      points="728,391.5 735,394.2 735,402.2 728,399.5"
+      fill="#55ad69"
+      stroke="none"
+      stroke-width="0"
+    />
+  
+    
+    <polygon
+      points="742,391.5 735,394.2 735,402.2 742,399.5"
+      fill="#55ad69"
+      stroke="none"
+      stroke-width="0"
+    />
+  
+    
+    <polygon
+      points="735,388.8 742,391.5 735,394.2 728,391.5"
+      fill="#75c883"
+      stroke="none"
+      stroke-width="0"
+    />
+  
+  
+      </g>
+    
+        </g>
+      
+        <g
           class="grass-grow"
           style="animation-delay: 1.83s;"
         >
@@ -4432,7 +4489,7 @@
     font-size="10.5"
     font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
   >
-    total contributions in this view: 118
+    total contributions in this view: 122
   </text>
 
   <text
