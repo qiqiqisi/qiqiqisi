@@ -4438,6 +4438,51 @@
       
         <g
           class="grass-grow"
+          style="animation-delay: 1.87s;"
+        >
+          
+      <g>
+        
+    <polygon
+      points="717.5,424.8 720.2,412 722,424.8"
+      fill="#dcefdc"
+      stroke="none"
+      stroke-width="0"
+    />
+  
+
+        
+    <polygon
+      points="721.1,424.8 722.8000000000001,408 724.4000000000001,424.8"
+      fill="#a6dbab"
+      stroke="none"
+      stroke-width="0"
+    />
+  
+
+        
+    <polygon
+      points="723.1,424.8 727.3000000000001,411 725.7,424.8"
+      fill="#bde3bf"
+      stroke="none"
+      stroke-width="0"
+    />
+  
+
+        
+    <polygon
+      points="722.5,424.8 724.7,414 723.8000000000001,424.8"
+      fill="#82cd8f"
+      stroke="none"
+      stroke-width="0"
+    />
+  
+      </g>
+    
+        </g>
+      
+        <g
+          class="grass-grow"
           style="animation-delay: 1.86s;"
         >
           
@@ -4681,7 +4726,7 @@
     font-size="10.5"
     font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
   >
-    total contributions in this view: 133
+    total contributions in this view: 134
   </text>
 
   <text
